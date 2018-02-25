@@ -4,5 +4,4 @@ Aplikasi Wazma: mendengarkan audio murottal Al-Quran Juz Amma beserta terjemahan
 
 This app is available in the Google Play:
 https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&hl=in
-
 Please do not redistribute under your own name.
