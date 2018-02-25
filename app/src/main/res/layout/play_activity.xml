@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical" >
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/colorBrown"
+        android:gravity="center_horizontal"
+        android:padding="@dimen/padding_title"
+        android:textSize="@dimen/text_title"
+        android:textStyle="bold" />
+
+    <Button
+        android:id="@+id/btnPLAY"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/tvTitle"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white"
+        android:layout_toLeftOf="@+id/btnPAUSE"
+        android:layout_toStartOf="@+id/btnPAUSE"
+        android:text="@string/play" />
+
+    <Button
+        android:id="@+id/btnSTOP"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white"
+        android:layout_alignTop="@+id/btnPAUSE"
+        android:layout_toEndOf="@+id/btnPAUSE"
+        android:layout_toRightOf="@+id/btnPAUSE"
+        android:text="@string/stop" />
+
+    <Button
+        android:id="@+id/btnPAUSE"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorPrimary"
+        android:textColor="@color/white"
+        android:layout_alignTop="@+id/btnPLAY"
+        android:layout_centerHorizontal="true"
+        android:text="@string/pause" />
+
+</RelativeLayout>
