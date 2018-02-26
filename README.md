@@ -3,7 +3,7 @@
 
 The Wazma app helps you to know the prayer times of every place in the world and listen to Quran Juz Amma and translation audio in Indonesian.
 
-[<img src="https://lh3.googleusercontent.com/Dnw-i0Lesv2sblDbdtmml4VQrASPe-CxdZA_UqGrYi5ZZrPW9GS9e5KLFeHiU6MKCA=h900" width="271.499" height="450" alt="Google Play"/>](https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&hl=in)
+[<img src="https://lh3.googleusercontent.com/Dnw-i0Lesv2sblDbdtmml4VQrASPe-CxdZA_UqGrYi5ZZrPW9GS9e5KLFeHiU6MKCA=h900" width="286.583" height="475" alt="Google Play"/>](https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&hl=in)
 
 # Description
 
@@ -11,7 +11,7 @@ You can learn how to use listview, play, pause, and stop audio with a lot of fil
 
 # License and Open Source
 
-Wazma is available for free on the Google Play. I however kindly ask you to *NOT* ship this app or slight variations of it under your own name.
+Wazma is available for free on the Google Play. We however kindly ask you to *NOT* ship this app or slight variations of it under your own name.
 
 # MIT License
 
