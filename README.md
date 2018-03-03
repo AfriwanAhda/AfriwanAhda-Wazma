@@ -1,7 +1,7 @@
 # Wazma
 [<img src="https://github.com/AfriwanAhda/AfriwanAhda-Wazma/blob/master/app/src/main/res/drawable/google-play-badge.png" width="258.4" height="100" alt="Google Play"/>](https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&hl=in)
 
-The Wazma app helps you to know the prayer times of every place in the world and listen to Quran Juz Amma and translation audio in Indonesian.
+The Wazma app helps you to know the prayer times of every place around the world and listen to Quran Juz Amma and translation audio in Indonesian.
 
 [<img src="https://lh3.googleusercontent.com/Dnw-i0Lesv2sblDbdtmml4VQrASPe-CxdZA_UqGrYi5ZZrPW9GS9e5KLFeHiU6MKCA=h900" width="286.583" height="475" alt="Google Play"/>](https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&hl=in)
 
