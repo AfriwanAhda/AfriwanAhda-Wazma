@@ -1,5 +1,6 @@
-package motion.studio.wazma.activity;
+//      بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
 
+package motion.studio.wazma.activity;
 import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
