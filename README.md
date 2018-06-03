@@ -1,9 +1,10 @@
 # Wazma
 <a href="https://itunes.apple.com/nz/app/wazma-al-quran-murottal/id1389802235?mt=8" style="clear: left; float: left; margin-bottom: 1em; margin-right: 1em;">
-<img height="35" src="https://housing.umn.edu/sites/housing.umn.edu/files/ww_app-store-badge_150909.png" width="129.2" />
-</a></a><a href="https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&amp;hl=in">
-<img height="33" src="https://www.newstalkflorida.com/wp-content/uploads/2017/01/Get_it_on_Google_play.png" width="129.2" />
+<img height="52.5" src="https://housing.umn.edu/sites/housing.umn.edu/files/ww_app-store-badge_150909.png" width="193.8" />
+</a><a href="https://play.google.com/store/apps/details?id=motion.studio.jadwalshalat&amp;hl=in">
+<img height="49,5" src="https://www.newstalkflorida.com/wp-content/uploads/2017/01/Get_it_on_Google_play.png" width="193.8" />
 </a>
+
 
 The Wazma app helps you to know the prayer times of every place around the world and listen to Quran Juz Amma and translation audio in Indonesian.
 
