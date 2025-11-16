@@ -3,12 +3,52 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent" >
 
+    <!-- Premium Badge (only visible for premium users) -->
+    <LinearLayout
+        android:id="@+id/premiumBadge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary"
+        android:padding="8dp"
+        android:gravity="center"
+        android:visibility="gone">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="✨ PREMIUM ✨"
+            android:textColor="@android:color/white"
+            android:textStyle="bold"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+    <!-- Upgrade Button (only visible for free users) -->
+    <Button
+        android:id="@+id/btnUpgrade"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="🔓 UPGRADE TO PREMIUM - Remove Ads &amp; Get More Features"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@color/colorAccent"
+        android:padding="12dp"
+        android:textStyle="bold"
+        android:visibility="visible"/>
+
     <ListView
         android:id="@+id/listPlayer"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/btnUpgrade"
+        android:layout_above="@+id/adContainer"
         android:fastScrollEnabled="true"
         android:scrollbars="vertical"
         android:smoothScrollbar="true" />
+
+    <!-- Banner Ad Container -->
+    <FrameLayout
+        android:id="@+id/adContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"/>
 
 </RelativeLayout>

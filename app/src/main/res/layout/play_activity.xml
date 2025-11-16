@@ -47,4 +47,12 @@
         android:layout_centerHorizontal="true"
         android:text="@string/pause" />
 
+    <!-- Banner Ad Container -->
+    <FrameLayout
+        android:id="@+id/adContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:visibility="gone"/>
+
 </RelativeLayout>

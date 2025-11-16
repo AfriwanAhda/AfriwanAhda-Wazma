@@ -5,7 +5,7 @@ import android.content.Intent;
 import android.media.MediaPlayer;
 import android.media.MediaPlayer.OnCompletionListener;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -31,6 +31,10 @@ public class PlayActivity extends AppCompatActivity {
         setListener();
     }
 
+    private motion.studio.wazma.manager.AdManager adManager;
+    private motion.studio.wazma.manager.PremiumManager premiumManager;
+    private android.widget.FrameLayout adContainer;
+
     public void initiate() {
         getSupportActionBar().setTitle("Al Qur'an - Juz Amma");
         mp = new MediaPlayer();
@@ -38,9 +42,19 @@ public class PlayActivity extends AppCompatActivity {
         btnPlay = findViewById(R.id.btnPLAY);
         btnPause = findViewById(R.id.btnPAUSE);
         btnStop = findViewById(R.id.btnSTOP);
+        adContainer = findViewById(R.id.adContainer);
+
         Intent intent = getIntent();
         index = intent.getIntExtra("position", 0);
         title.setText(intent.getStringExtra("surah"));
+
+        // Initialize managers and show ads if not premium
+        premiumManager = motion.studio.wazma.manager.PremiumManager.getInstance(this);
+        adManager = motion.studio.wazma.manager.AdManager.getInstance(this);
+
+        if (!premiumManager.isPremium()) {
+            adManager.showBannerAd(this, adContainer);
+        }
     }
 
     public void setListener() {
@@ -148,5 +162,18 @@ public class PlayActivity extends AppCompatActivity {
     public void onBackPressed() {
         super.onBackPressed();
         stop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        // Fix memory leak - release MediaPlayer resources
+        if (mp != null) {
+            if (mp.isPlaying()) {
+                mp.stop();
+            }
+            mp.release();
+            mp = null;
+        }
     }
 }

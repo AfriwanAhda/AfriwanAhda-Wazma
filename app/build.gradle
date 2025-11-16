@@ -1,32 +1,56 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 26
-    buildToolsVersion "26.0.2"
+    namespace 'motion.studio.wazma'
+    compileSdk 34
+    buildToolsVersion "34.0.0"
+
     defaultConfig {
         applicationId "motion.studio.wazma"
         minSdkVersion 21
-        targetSdkVersion 16
-        versionCode 1
-        versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        targetSdkVersion 34
+        versionCode 2
+        versionName "2.0.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
-}
 
-allprojects {
-    repositories {
-        jcenter()
-        maven {
-            url "https://maven.google.com"
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
-    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
-        exclude group: 'com.android.support', module: 'support-annotations'
-    })
-    compile 'com.android.support:appcompat-v7:26.+'
-    testCompile 'junit:junit:4.12'
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // AndroidX libraries
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'com.google.android.material:material:1.11.0'
+    implementation 'androidx.cardview:cardview:1.0.0'
+    implementation 'androidx.recyclerview:recyclerview:1.3.2'
+
+    // Google Play Billing for IAP
+    implementation 'com.android.billingclient:billing:6.1.0'
+
+    // AdMob for ads
+    implementation 'com.google.android.gms:play-services-ads:22.6.0'
+
+    // SharedPreferences
+    implementation 'androidx.preference:preference:1.2.1'
+
+    // Location services for Prayer Times
+    implementation 'com.google.android.gms:play-services-location:21.1.0'
+
+    // Testing
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 }

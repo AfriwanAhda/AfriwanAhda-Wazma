@@ -1,0 +1,496 @@
+================================================================================
+                    WAZMA - KEY CODE SNIPPETS AND ANALYSIS
+================================================================================
+
+FILE 1: MainActivity.java - SURAH LIST HARDCODING
+================================================================================
+Location: /home/user/AfriwanAhda-Wazma/app/src/main/java/motion/studio/wazma/activity/MainActivity.java
+
+setListData() Method - All 37 Surahs Hardcoded:
+Lines 42-81:
+
+public void setListData() {
+    listSurah.add("1. Al-Fatihah (Pembukaan) - 7 ayat");
+    listSurah.add("78. An-Naba' (Berita besar) - 40 ayat");
+    listSurah.add("79. An-Nazi'at (Malaikat² yang mencabut) - 46 ayat");
+    // ... continues through Chapter 114 (An-Nas)
+    listSurah.add("114. An-Nas (Umat manusia) - 6 ayat");
+}
+
+ISSUE: This is hardcoded data. Better approach:
+- Load from JSON file in assets
+- Use SQLite database
+- Remote configuration
+
+Item Click Listener (Lines 31-39):
+
+listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+        Intent mIntent = new Intent(MainActivity.this, PlayActivity.class);
+        mIntent.putExtra("position", position);
+        mIntent.putExtra("surah", listSurah.get(position));
+        startActivity(mIntent);
+    }
+});
+
+OBSERVATION: Passes position (0-36) and Surah name string to PlayActivity
+
+================================================================================
+
+FILE 2: PlayActivity.java - AUDIO PLAYBACK WITH BUGS
+================================================================================
+Location: /home/user/AfriwanAhda-Wazma/app/src/main/java/motion/studio/wazma/activity/PlayActivity.java
+
+BUG #1: Audio File Mapping Logic (Lines 51-55):
+
+if (index==0) {
+    item = getResources().getIdentifier("a" + (index+1), "raw", getPackageName());
+} else {
+    item = getResources().getIdentifier("a" + (index+77), "raw", getPackageName());
+}
+
+PROBLEM: Magic numbers (0 and 77) are hardcoded
+- If index = 0: plays a1.mp3 (Al-Fatihah)
+- If index = 1: plays a78.mp3 (An-Naba')
+- If index = 36: plays a114.mp3 (An-Nas)
+
+EXPLANATION: The list has Al-Fatihah (position 0) + Juz Amma (positions 1-36).
+Juz Amma is chapters 78-114. This mapping is confusing and error-prone.
+
+BUG #2: Memory Leak in play() Method (Lines 87-101):
+
+public void play(int item) {
+    /** Memanggil File MP3 */
+    mp = MediaPlayer.create(this, item);  // <-- PROBLEM HERE
+
+    try {
+        mp.prepare();
+    } catch (IllegalStateException e) {
+        e.printStackTrace();  // <-- NO USER FEEDBACK
+    } catch (IOException e) {
+        e.printStackTrace();   // <-- NO USER FEEDBACK
+    }
+
+    mp.start();
+
+    mp.setOnCompletionListener(new OnCompletionListener() {
+        @Override
+        public void onCompletion(MediaPlayer mp) {
+            stateAwal();
+        }
+    });
+}
+
+ISSUES:
+1. Line 89: Creates new MediaPlayer without releasing old one
+   ISSUE: If user clicks play multiple times:
+   - Old MediaPlayer instances remain in memory
+   - Can cause OutOfMemory crashes
+   
+2. mp.prepare() on line 92 is unnecessary
+   REASON: MediaPlayer.create() already calls prepare()
+   
+3. Error handling (lines 93-96) just prints to logcat
+   ISSUE: User gets no feedback if audio preparation fails
+
+PROPER FIX:
+
+public void play(int item) {
+    // Release previous player if exists
+    if (mp != null) {
+        try {
+            mp.release();
+        } catch (Exception e) {
+            Log.e(TAG, "Error releasing MediaPlayer", e);
+        }
+    }
+    
+    mp = MediaPlayer.create(this, item);
+    if (mp == null) {
+        Toast.makeText(this, "Audio file not found", Toast.LENGTH_SHORT).show();
+        return;
+    }
+
+    try {
+        // mp.prepare() not needed - create() already prepared it
+        mp.start();
+        statePlay();
+    } catch (Exception e) {
+        Toast.makeText(this, "Error playing audio: " + e.getMessage(), 
+                       Toast.LENGTH_SHORT).show();
+    }
+
+    mp.setOnCompletionListener(mp -> stateAwal());
+}
+
+BUG #3: No Resource Cleanup (Lines 148-151):
+
+@Override
+public void onBackPressed() {
+    super.onBackPressed();
+    stop();
+}
+
+ISSUE: Should also release MediaPlayer resources. Better:
+
+@Override
+protected void onDestroy() {
+    super.onDestroy();
+    if (mp != null) {
+        try {
+            mp.stop();
+            mp.release();
+            mp = null;
+        } catch (Exception e) {
+            Log.e(TAG, "Error cleaning up MediaPlayer", e);
+        }
+    }
+}
+
+================================================================================
+
+FILE 3: ListAdapter.java - CUSTOM ADAPTER
+================================================================================
+Location: /home/user/AfriwanAhda-Wazma/app/src/main/java/motion/studio/wazma/adapter/ListAdapter.java
+
+Full Implementation (42 lines):
+
+public class ListAdapter extends ArrayAdapter<String> {
+
+    private int resource;
+    private ArrayList<String> listSurah = new ArrayList<>();
+    private LayoutInflater mInflater;
+
+    public ListAdapter(Context context, int resource, ArrayList<String> objects) {
+        super(context, resource, objects);
+        this.listSurah = objects;
+        this.resource = resource;
+        mInflater = LayoutInflater.from(context);
+    }
+
+    @NonNull
+    @Override
+    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+        if(convertView == null) {
+            convertView = mInflater.inflate(resource, null);  // <-- INEFFICIENT
+        }
+        TextView item = convertView.findViewById(android.R.id.text1);
+        item.setText(listSurah.get(position));
+        return convertView;
+    }
+}
+
+OBSERVATIONS:
+1. Line 35: Inflates null as parent parameter - inefficient
+   BETTER: mInflater.inflate(resource, parent, false);
+   
+2. No ViewHolder pattern - creates new findViewById() every time
+   IMPACT: Slower scrolling performance
+   
+3. Storing reference to entire listSurah array is redundant
+   REASON: Parent class already has it via super()
+
+BETTER IMPLEMENTATION:
+
+public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+    ViewHolder holder;
+    
+    if (convertView == null) {
+        convertView = mInflater.inflate(resource, parent, false);
+        holder = new ViewHolder();
+        holder.text = convertView.findViewById(android.R.id.text1);
+        convertView.setTag(holder);
+    } else {
+        holder = (ViewHolder) convertView.getTag();
+    }
+    
+    holder.text.setText(getItem(position));
+    return convertView;
+}
+
+private static class ViewHolder {
+    TextView text;
+}
+
+================================================================================
+
+FILE 4: build.gradle - CRITICAL CONFIGURATION ISSUE
+================================================================================
+Location: /home/user/AfriwanAhda-Wazma/app/build.gradle
+
+Current Configuration (Lines 1-14):
+
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
+    defaultConfig {
+        applicationId "motion.studio.wazma"
+        minSdkVersion 21
+        targetSdkVersion 16          <-- *** CRITICAL BUG ***
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+}
+
+CRITICAL ISSUE:
+- minSdkVersion = 21 (Android 5.0)
+- targetSdkVersion = 16 (Android 4.1)
+- targetSdkVersion should NEVER be less than minSdkVersion!
+
+IMPACT:
+- Google Play Store will reject this
+- Build tools may issue warnings/errors
+- App behavior may be unpredictable
+
+FIX:
+Change line 9 to:
+    targetSdkVersion 34  (or at least 21, matching minSdkVersion)
+
+Deprecated Dependencies (Lines 25-31):
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])  // <-- DEPRECATED SYNTAX
+    androidTestCompile(...)                             // <-- DEPRECATED SYNTAX
+    compile 'com.android.support:appcompat-v7:26.+'    // <-- DEPRECATED LIBRARY
+    testCompile 'junit:junit:4.12'                      // <-- DEPRECATED SYNTAX
+}
+
+ISSUES:
+1. "compile" is deprecated (since Gradle 3.0)
+2. Should use "implementation" instead
+3. android.support.* libraries are deprecated
+4. Should migrate to AndroidX
+
+RECOMMENDED FIX:
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    androidTestImplementation('androidx.test.espresso:espresso-core:3.5.1')
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    testImplementation 'junit:junit:4.13.2'
+}
+
+Repositories (Lines 16-23):
+
+allprojects {
+    repositories {
+        jcenter()              // <-- DEPRECATED (SUNSET MAY 2021)
+        maven {
+            url "https://maven.google.com"
+        }
+    }
+}
+
+ISSUE:
+- jcenter() was sunset by JFrog on May 1, 2021
+- Future builds may fail
+
+RECOMMENDED FIX:
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+================================================================================
+
+FILE 5: AndroidManifest.xml - MINIMAL CONFIGURATION
+================================================================================
+Location: /home/user/AfriwanAhda-Wazma/app/src/main/AndroidManifest.xml
+
+Full Content (25 lines):
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="motion.studio.wazma">
+
+    <application
+        android:allowBackup="true"         <-- Could be security concern
+        android:icon="@mipmap/logo"
+        android:label="Wazma"
+        android:roundIcon="@mipmap/logo"
+        android:supportsRtl="true"         <-- Good: RTL support for Arabic
+        android:theme="@style/AppTheme">
+
+        <activity android:name="motion.studio.wazma.activity.MainActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity android:name="motion.studio.wazma.activity.PlayActivity" />
+
+    </application>
+
+</manifest>
+
+OBSERVATIONS:
+1. Line 6: allowBackup="true" - Enables Android backup
+   - This app has minimal data, so low risk
+   - Could add android:usesCleartextTraffic="false" for API 28+
+
+2. Line 9: supportsRtl="true" - Excellent for Arabic
+   - Proper RTL support for Arabic text
+   
+3. Line 13-18: MainActivity properly configured as launcher
+   - Correct intent filters
+   
+4. Line 20: PlayActivity lacks android:exported attribute
+   - For API 31+, should explicitly declare: android:exported="false"
+   - Not critical for this internal-only activity
+
+5. NO PERMISSIONS declared
+   - Good! App doesn't need any dangerous permissions
+   - If adding ads/billing later, will need INTERNET permission
+
+IMPROVED VERSION:
+
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="motion.studio.wazma">
+
+    <!-- Add if implementing ads/billing later: -->
+    <!-- <uses-permission android:name="android.permission.INTERNET" /> -->
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/logo"
+        android:label="Wazma"
+        android:roundIcon="@mipmap/logo"
+        android:supportsRtl="true"
+        android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="false">
+
+        <activity 
+            android:name="motion.studio.wazma.activity.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <activity 
+            android:name="motion.studio.wazma.activity.PlayActivity"
+            android:exported="false" />
+
+    </application>
+
+</manifest>
+
+================================================================================
+
+FILE 6: Layout Files - UI STRUCTURE
+================================================================================
+
+A. main_activity.xml (14 lines):
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent" >
+
+    <ListView
+        android:id="@+id/listPlayer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fastScrollEnabled="true"
+        android:scrollbars="vertical"
+        android:smoothScrollbar="true" />
+
+</RelativeLayout>
+
+OBSERVATIONS:
+- Very simple layout - just a ListView
+- fastScrollEnabled and smoothScrollbar are good for UX
+- No padding or margins - edges touch screen border
+
+B. play_activity.xml (50 lines):
+
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical" >
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:textColor="@color/colorBrown"
+        android:gravity="center_horizontal"
+        android:padding="@dimen/padding_title"
+        android:textSize="@dimen/text_title"
+        android:textStyle="bold" />
+
+    <Button android:id="@+id/btnPLAY" ... />
+    <Button android:id="@+id/btnPAUSE" ... />
+    <Button android:id="@+id/btnSTOP" ... />
+
+</RelativeLayout>
+
+LAYOUT STRUCTURE:
+- RelativeLayout with vertical centering
+- Title TextView at top (centered)
+- Three buttons below (Play | Pause | Stop)
+- Play button: left-aligned
+- Pause button: center-aligned
+- Stop button: right-aligned
+
+ISSUE: Using backgroundTint attribute (API 21+) - fine for minSdkVersion 21
+
+C. simple_list_item.xml (12 lines):
+
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@android:id/text1"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:textColor="@color/black"
+    android:gravity="center_vertical"
+    android:paddingLeft="@dimen/padding_list"
+    android:minHeight="?android:attr/listPreferredItemHeight" />
+
+OBSERVATIONS:
+- Simple TextView for each list item
+- Uses system id @android:id/text1 (standard practice)
+- Minimum height ensures touch targets are adequate
+- Left padding of 7dip
+
+================================================================================
+
+RESOURCE FILES SUMMARY
+================================================================================
+
+colors.xml:
+- Teal color scheme (#009688) - Material Design compliant
+- Brown for text (#4E342E)
+- Standard white/black
+- Additional colors defined but mostly unused
+
+strings.xml:
+- Minimal: Only app_name, play, pause, stop
+- Should add strings for:
+  - Error messages
+  - Button content descriptions
+  - Menu items (if adding)
+
+styles.xml:
+- Single AppTheme extending Theme.AppCompat.Light.DarkActionBar
+- Good Material Design foundation
+
+dimens.xml:
+- Three padding/text size values
+- Could be expanded for scalability
+
+================================================================================
+END OF CODE SNIPPETS
+================================================================================
